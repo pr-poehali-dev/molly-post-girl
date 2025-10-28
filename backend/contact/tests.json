@@ -1,0 +1,42 @@
+{
+  "tests": [
+    {
+      "name": "Valid contact form submission",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Иван Иванов",
+        "email": "ivan@example.com",
+        "message": "Здравствуйте! Хочу обсудить проект веб-разработки."
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Invalid email format",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Иван",
+        "email": "invalid-email",
+        "message": "Тестовое сообщение для проверки валидации"
+      },
+      "expectedStatus": 422
+    },
+    {
+      "name": "Message too short",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Иван",
+        "email": "ivan@example.com",
+        "message": "Короткое"
+      },
+      "expectedStatus": 422
+    }
+  ]
+}

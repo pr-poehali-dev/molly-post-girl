@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import Icon from "@/components/ui/icon";
 
 const skills = [
@@ -13,6 +17,47 @@ const skills = [
 ];
 
 const Index = () => {
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("https://functions.poehali.dev/7649237f-ccb6-4270-a57c-531148191d89", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Сообщение отправлено!",
+          description: data.message,
+        });
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        toast({
+          title: "Ошибка",
+          description: data.error || "Проверьте правильность заполнения формы",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отправить сообщение. Попробуйте позже.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <div 
@@ -93,18 +138,74 @@ const Index = () => {
         </section>
 
         <section className="container mx-auto px-4 py-20">
-          <div className="max-w-4xl mx-auto text-center">
-            <Card className="p-12 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-primary/20 backdrop-blur-sm">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Готов к сотрудничеству?
-              </h2>
-              <p className="text-muted-foreground text-lg mb-8">
-                Свяжитесь со мной для обсуждения вашего проекта
-              </p>
-              <button className="group px-10 py-5 bg-gradient-to-r from-primary to-secondary rounded-full font-bold text-xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/50">
-                Написать мне
-                <Icon name="Send" className="inline-block ml-2 transition-transform group-hover:translate-x-1" size={22} />
-              </button>
+          <div className="max-w-2xl mx-auto">
+            <Card className="p-8 md:p-12 bg-card/50 backdrop-blur-sm border-border">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  Свяжитесь со мной
+                </h2>
+                <p className="text-muted-foreground text-lg">
+                  Готов обсудить ваш проект
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Имя</label>
+                  <Input
+                    type="text"
+                    placeholder="Ваше имя"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                    minLength={2}
+                    className="bg-background border-border focus:border-primary"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Email</label>
+                  <Input
+                    type="email"
+                    placeholder="ваш@email.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    className="bg-background border-border focus:border-primary"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Сообщение</label>
+                  <Textarea
+                    placeholder="Расскажите о вашем проекте..."
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
+                    minLength={10}
+                    rows={5}
+                    className="bg-background border-border focus:border-primary resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="group w-full px-10 py-5 bg-gradient-to-r from-primary to-secondary rounded-full font-bold text-xl transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {isSubmitting ? (
+                    <>
+                      Отправка...
+                      <Icon name="Loader2" className="inline-block ml-2 animate-spin" size={22} />
+                    </>
+                  ) : (
+                    <>
+                      Отправить
+                      <Icon name="Send" className="inline-block ml-2 transition-transform group-hover:translate-x-1" size={22} />
+                    </>
+                  )}
+                </button>
+              </form>
             </Card>
           </div>
         </section>
